@@ -1,0 +1,70 @@
+// Create Database plus Collections
+use techshop
+db.createCollection("users")
+db.users.createIndex({ "name": 1 })
+db.createCollection("products")
+db.createCollection("transactions")
+
+
+// Insert Sample Data
+// Insert sample users
+db.users.insertMany([
+    { name: "Jacob", email: "jacob@example.com", password: "jacobpass" },
+    { name: "james", email: "james@example.com", password: "jamespass" }
+  ])
+  
+  // Insert sample products
+  db.products.insertMany([
+    { name: "Laptop X", description: "High-end laptop", price: 1200, userId: ObjectId("72ff3109a3e8c71fd08bf302") },
+    { name: "Smartphone Pro PLus", description: "Latest model smartphone", price: 800, userId: ObjectId("72ff3109a3e8c71fd08bf302") },
+    { name: "Smartwatch X20", description: "Fitness tracker", price: 200, userId: ObjectId("72ff3109a3e8c71fd08bf302")}
+  ])
+  
+  // Insert sample transactions
+  db.transactions.insertMany([
+    { productId: ObjectId("65ff33fea3e8c71fd08bf204"), buyerId: ObjectId("72ff3109a3e8c71fd08bf302"), date: new ISODate(), quantity: 2 },
+    { productId: ObjectId("65ff33fea3e8c71fd08bf205"), buyerId: ObjectId("72ff3109a3e8c71fd08bf302"), date: new ISODate(), quantity: 2 }
+
+  ])
+ 
+
+
+// Query to find all products listed by a specific user:
+db.products.find({ userId: ObjectId("72ff3109a3e8c71fd08bf302") })
+
+
+
+//Query to find the total amount spent by a specific user:
+db.transactions.aggregate([
+  { $match: { buyerId: ObjectId("72ff3109a3e8c71fd08bf302") } },
+  { $lookup: {
+     from: "products",
+     localField: "productId",
+     foreignField: "_id",
+     as: "productDetails"
+  }},
+  { $unwind: "$productDetails" },
+  { $group: {
+     _id: "$buyerId",
+     totalSpent: { $sum: { $multiply: ["$quantity", "$productDetails.price"] } }
+  }}
+])
+
+
+
+// query to find the top 5 most popular products 
+db.transactions.aggregate([
+  { $group: {
+     _id: "$productId",
+     count: { $sum: 1 }
+  }},
+  { $sort: { count: -1 } },
+  { $limit: 5 },
+  { $lookup: {
+     from: "products",
+     localField: "_id",
+     foreignField: "_id",
+     as: "productDetails"
+  }},
+  { $unwind: "$productDetails" }
+])
