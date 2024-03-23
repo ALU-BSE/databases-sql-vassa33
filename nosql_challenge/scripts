@@ -1,44 +1,42 @@
-// create database and collections
+// Create Database plus Collections
 use techshop
-db.createCollection("Users")
+db.createCollection("users")
 db.users.createIndex({ "name": 1 })
-db.createCollection("Products")
-db.createCollection("Transactions")
+db.createCollection("products")
+db.createCollection("transactions")
 
 
+// Insert Sample Data
 // Insert sample users
 db.users.insertMany([
-    { _id: 1001, name: "Alice", email: "alice@example.com", password: "hashed_password1" },
-    { _id: 1002, name: "Bob", email: "bob@example.com", password: "hashed_password2" },
-    { _id: 1003, name: "Carol", email: "carol@example.com", password: "hashed_password3" }
-  ]);
+    { name: "Jacob", email: "jacob@example.com", password: "jacobpass" },
+    { name: "james", email: "james@example.com", password: "jamespass" }
+  ])
   
   // Insert sample products
   db.products.insertMany([
-    { _id: 2001, name: "Laptop X", description: "High-performance laptop", price: 1200, seller_id: 1001 },
-    { _id: 2002, name: "Smartphone Y", description: "Flagship smartphone", price: 800, seller_id: 1002 },
-    { _id: 2003, name: "Headphones Z", description: "Noise-canceling headphones", price: 150, seller_id: 1003 },
-    { _id: 2004, name: "Tablet A", description: "10-inch tablet", price: 300, seller_id: 1001 },
-    { _id: 2005, name: "Smartwatch B", description: "Fitness tracker", price: 100, seller_id: 1002 }
-]);
+    { name: "Laptop X", description: "High-end laptop", price: 1200, userId: ObjectId("72ff3109a3e8c71fd08bf302") },
+    { name: "Smartphone Pro PLus", description: "Latest model smartphone", price: 800, userId: ObjectId("72ff3109a3e8c71fd08bf302") },
+    { name: "Smartwatch X20", description: "Fitness tracker", price: 200, userId: ObjectId("72ff3109a3e8c71fd08bf302")}
+  ])
   
   // Insert sample transactions
   db.transactions.insertMany([
-    { buyer_id: 1001, product_id: 2001, date: ISODate("2024-03-20"), quantity: 2 },
-    { buyer_id: 1002, product_id: 2002, date: ISODate("2024-03-21"), quantity: 1 },
-    { buyer_id: 1003, product_id: 2003, date: ISODate("2024-03-22"), quantity: 3 }
-]);
+    { productId: ObjectId("65ff33fea3e8c71fd08bf204"), buyerId: ObjectId("72ff3109a3e8c71fd08bf302"), date: new ISODate(), quantity: 2 },
+    { productId: ObjectId("65ff33fea3e8c71fd08bf205"), buyerId: ObjectId("72ff3109a3e8c71fd08bf302"), date: new ISODate(), quantity: 2 }
+
+  ])
  
-  
-
-// query to find all products listed by a specific user:
-db.products.find({ userId: ObjectId("65ff3109a3e8c71fd08bf203") })
 
 
-//query to find the total amount spent by a specific user:
+// Query to find all products listed by a specific user:
+db.products.find({ userId: ObjectId("72ff3109a3e8c71fd08bf302") })
 
+
+
+//Query to find the total amount spent by a specific user:
 db.transactions.aggregate([
-  { $match: { buyerId: ObjectId("65ff3109a3e8c71fd08bf203") } },
+  { $match: { buyerId: ObjectId("72ff3109a3e8c71fd08bf302") } },
   { $lookup: {
      from: "products",
      localField: "productId",
@@ -53,8 +51,8 @@ db.transactions.aggregate([
 ])
 
 
-// query to find the top 5 most popular products 
 
+// query to find the top 5 most popular products 
 db.transactions.aggregate([
   { $group: {
      _id: "$productId",
